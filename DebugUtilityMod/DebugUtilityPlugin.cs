@@ -59,7 +59,7 @@ namespace DebugUtilityMod
             }
             catch
             {
-                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (FastXPPatch).");
+                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (XPPatch).");
             }
 
             try
