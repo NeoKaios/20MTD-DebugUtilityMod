@@ -8,12 +8,13 @@ namespace DebugUtilityMod
     static class FastGamePatch
     {
         static private float prev_timer = 0;
+        static private char lastGamemode = '\0';
 
         [HarmonyPatch(typeof(GameTimer), "Update")]
         [HarmonyPostfix]
-        static void Update_post(ref GameTimer __instance, bool ____isPlaying)
+        static void GameTimerUpdate_post(ref GameTimer __instance, bool ____isPlaying)
         {
-            // Apply a "mult"-fold to GameTimer speed
+            // Apply a X-fold multiplier to GameTimer speed
             if (____isPlaying)
             {
                 float delta = __instance.timer - prev_timer;
@@ -22,28 +23,71 @@ namespace DebugUtilityMod
             }
         }
 
+        [HarmonyPatch(typeof(GameTimer), "Awake")]
+        [HarmonyPrefix]
+        static void GameTimerAwake_prefix()
+        {
+            // Timer reset
+            prev_timer = 0;
+        }
+
         [HarmonyPatch(typeof(BossSpawner), "LoadSpawners")]
         [HarmonyPrefix]
-        static void Start_prefix(ref List<BossSpawn> spawners, ref GameObject ___arenaMonsterPrefab)
+        static void BossLoadSpawners_prefix(ref List<BossSpawn> spawners, ref GameObject ___arenaMonsterPrefab)
         {
-            TimeToLive ttl = (TimeToLive)___arenaMonsterPrefab.GetComponent("TimeToLive");
-            float lifetime = (float)Traverse.Create(ttl).Field("lifetime").GetValue();
-            Traverse.Create(ttl).Field("lifetime").SetValue(lifetime / DebugUtilityPlugin.gametimerMult.Value);
-            foreach (BossSpawn bs in spawners)
+            if (!IsDone(true))
             {
-                bs.timeToSpawn /= DebugUtilityPlugin.gametimerMult.Value;
+                // Reduce arena lifetime accordingly
+                TimeToLive ttl = (TimeToLive)___arenaMonsterPrefab.GetComponent("TimeToLive");
+                float lifetime = (float)Traverse.Create(ttl).Field("lifetime").GetValue();
+                Traverse.Create(ttl).Field("lifetime").SetValue(lifetime / DebugUtilityPlugin.gametimerMult.Value);
+
+                foreach (BossSpawn bs in spawners)
+                {
+                    // Reduce bosses spawn times accordingly
+                    bs.timeToSpawn /= DebugUtilityPlugin.gametimerMult.Value;
+                }
             }
         }
+
         [HarmonyPatch(typeof(HordeSpawner), "LoadSpawners")]
         [HarmonyPrefix]
-        static void hordeLoadSpawners_prefix(ref List<SpawnSession> spawnSessions)
+        static void HordeLoadSpawners_prefix(ref List<SpawnSession> spawnSessions)
         {
-            foreach (SpawnSession ss in spawnSessions)
+            if (!IsDone(false))
             {
-                ss.startTime /= DebugUtilityPlugin.gametimerMult.Value;
-                ss.duration /= DebugUtilityPlugin.gametimerMult.Value;
-                ss.spawnCooldown /= DebugUtilityPlugin.gametimerMult.Value;
+                foreach (SpawnSession ss in spawnSessions)
+                {
+                    // Accelerate horde time params accordingly
+                    ss.startTime /= DebugUtilityPlugin.gametimerMult.Value;
+                    ss.duration /= DebugUtilityPlugin.gametimerMult.Value;
+                    ss.spawnCooldown /= DebugUtilityPlugin.gametimerMult.Value;
+                }
             }
+        }
+
+        // This is useful trust me, avoid reducing twice spawn timers, 
+        static private bool IsDone(bool isBoss)
+        {
+            bool isStandard = SelectedMap.MapData.nameStringID.key == "standard_mode_name";
+            if ((isStandard && lastGamemode == 's') || (!isStandard && lastGamemode == 'q'))
+            {
+                return true;
+            }
+            if (!isBoss)
+            {
+                lastGamemode = isStandard ? 's' : 'q';
+            }
+            return false;
+        }
+
+
+        [HarmonyPatch(typeof(SummonEgg), "Start")]
+        [HarmonyPrefix]
+        static void SummonnEggStart_prefix(ref float ___secondsToHatch)
+        {
+            // Accelerate hatch time accordingly
+            ___secondsToHatch = ___secondsToHatch / DebugUtilityPlugin.gametimerMult.Value;
         }
     }
 }

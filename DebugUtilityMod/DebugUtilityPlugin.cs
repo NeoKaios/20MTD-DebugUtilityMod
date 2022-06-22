@@ -54,7 +54,7 @@ namespace DebugUtilityMod
                 {
                     Harmony.CreateAndPatchAll(typeof(FastXPPatch));
                 }
-                Logger.LogInfo(hasFastXP.Value ? "<Active> FastXP with rate = " + XPmult + "*baseXP" : "<Inactive> FastXP");
+                Logger.LogInfo(hasFastXP.Value ? "<Active> FastXP with rate = " + XPmult.Value + "*baseXP" : "<Inactive> FastXP");
             }
             catch
             {
@@ -67,7 +67,7 @@ namespace DebugUtilityMod
                 {
                     Harmony.CreateAndPatchAll(typeof(FastGamePatch));
                 }
-                Logger.LogInfo(hasFastGame.Value ? "<Active> FastGame with rate = time/" + gametimerMult : "<Inactive> FastGame");
+                Logger.LogInfo(hasFastGame.Value ? "<Active> FastGame with duration = baseTime/" + gametimerMult.Value : "<Inactive> FastGame");
             }
             catch
             {
