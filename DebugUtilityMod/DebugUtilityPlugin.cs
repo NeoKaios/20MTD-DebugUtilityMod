@@ -14,7 +14,8 @@ namespace DebugUtilityMod
 
         public static ConfigEntry<float> gametimerMult;
         public static ConfigEntry<float> XPmult;
-        public static ConfigEntry<bool> hasFastXP;
+        public static ConfigEntry<int> stopXPAtLevel;
+        public static ConfigEntry<bool> hasXPPatch;
         public static ConfigEntry<bool> hasInvincibility;
         public static ConfigEntry<bool> hasFastGame;
 
@@ -25,9 +26,9 @@ namespace DebugUtilityMod
 
         public void Awake()
         {
-
-            hasFastXP = Config.Bind("Fast XP", "FastXP activation", false, "Set to True to activate FastXP bonus");
-            XPmult = Config.Bind("Fast XP", "FastXP multiplier", 0f, "Amount of multiplication bonus applied to XP pickup");
+            hasXPPatch = Config.Bind("XP Patch", "XP Patch activation", false, "Set to True to activate XP Patch");
+            XPmult = Config.Bind("XP Patch", "FastXP multiplier", 1f, "Amount of multiplication bonus applied to XP pickup");
+            stopXPAtLevel = Config.Bind("XP Patch", "Stop leveling up after X level", 100, "Level after which the player stop receiving XP");
 
             hasFastGame = Config.Bind("Fast GameTimer", "FastGame activation", false, "Set to True to activate faster game");
             gametimerMult = Config.Bind("Fast GameTimer", "GameTimer multiplier", 2f, "Increase the speed of the game (if 2, standard lasts 20/2 = 10 min)");
@@ -50,11 +51,11 @@ namespace DebugUtilityMod
 
             try
             {
-                if (hasFastXP.Value)
+                if (hasXPPatch.Value)
                 {
-                    Harmony.CreateAndPatchAll(typeof(FastXPPatch));
+                    Harmony.CreateAndPatchAll(typeof(XPPatch));
                 }
-                Logger.LogInfo(hasFastXP.Value ? "<Active> FastXP with rate = " + XPmult.Value + "*baseXP" : "<Inactive> FastXP");
+                Logger.LogInfo(hasXPPatch.Value ? "<Active> XPPatch     XP = " + XPmult.Value+ "*baseXP  StopLevel = " + stopXPAtLevel.Value : "<Inactive> FastXP");
             }
             catch
             {
@@ -63,11 +64,11 @@ namespace DebugUtilityMod
 
             try
             {
-                if (hasFastGame.Value)
+                if (hasFastGame.Value && gametimerMult.Value != 0)
                 {
                     Harmony.CreateAndPatchAll(typeof(FastGamePatch));
                 }
-                Logger.LogInfo(hasFastGame.Value ? "<Active> FastGame with duration = baseTime/" + gametimerMult.Value : "<Inactive> FastGame");
+                Logger.LogInfo(hasFastGame.Value && gametimerMult.Value != 0 ? "<Active> FastGame    duration = baseTime/" + gametimerMult.Value : "<Inactive> FastGame");
             }
             catch
             {
