@@ -19,6 +19,7 @@ namespace DebugUtilityMod
         public static ConfigEntry<bool> hasInvincibility;
         public static ConfigEntry<bool> hasFastGame;
         public static ConfigEntry<bool> hasInfiniteReroll;
+        public static ConfigEntry<bool> hasGunPatch;
 
         //public static ConfigEntry<bool> hasUnlocks;
         //public static ConfigEntry<bool> hasSoulUnlock;
@@ -38,6 +39,8 @@ namespace DebugUtilityMod
 
             hasInfiniteReroll = Config.Bind("Reroll", "Infinite Reroll", false, "If active, every character can reroll indefinitly");
 
+            hasGunPatch = Config.Bind("Gun", "Infinite Ammo", false, "If active, infinite ammo");
+
             try
             {
                 if (hasInvincibility.Value)
@@ -51,6 +54,18 @@ namespace DebugUtilityMod
                 Logger.LogError($"{PLUGIN_GUID} failed to patch methods (InvincibilityPatch).");
             }
 
+            try
+            {
+                if (hasGunPatch.Value)
+                {
+                    Harmony.CreateAndPatchAll(typeof(GunPatch));
+                }
+                Logger.LogInfo((hasGunPatch.Value ? "<Active>" : "<Inactive>") + " GunPatch");
+            }
+            catch
+            {
+                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (GunPatch).");
+            }
             try
             {
                 if (hasInfiniteReroll.Value)
