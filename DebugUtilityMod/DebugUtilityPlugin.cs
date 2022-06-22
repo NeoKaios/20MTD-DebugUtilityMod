@@ -9,7 +9,7 @@ namespace DebugUtilityMod
     {
         public const string PLUGIN_GUID = "kaios.mod.debugutility";
         public const string PLUGIN_NAME = "Debug Utility Mod";
-        public const string PLUGIN_VERSION = "1.0";
+        public const string PLUGIN_VERSION = "1.1";
 
 
         public static ConfigEntry<float> gametimerMult;
@@ -18,6 +18,7 @@ namespace DebugUtilityMod
         public static ConfigEntry<bool> hasXPPatch;
         public static ConfigEntry<bool> hasInvincibility;
         public static ConfigEntry<bool> hasFastGame;
+        public static ConfigEntry<bool> hasInfiniteReroll;
 
         //public static ConfigEntry<bool> hasUnlocks;
         //public static ConfigEntry<bool> hasSoulUnlock;
@@ -27,7 +28,7 @@ namespace DebugUtilityMod
         public void Awake()
         {
             hasXPPatch = Config.Bind("XP Patch", "XP Patch activation", false, "Set to True to activate XP Patch");
-            XPmult = Config.Bind("XP Patch", "FastXP multiplier", 1f, "Amount of multiplication bonus applied to XP pickup");
+            XPmult = Config.Bind("XP Patch", "XP multiplier", 1f, "Amount of multiplication bonus applied to XP pickup");
             stopXPAtLevel = Config.Bind("XP Patch", "Stop leveling up after X level", 100, "Level after which the player stop receiving XP");
 
             hasFastGame = Config.Bind("Fast GameTimer", "FastGame activation", false, "Set to True to activate faster game");
@@ -35,6 +36,7 @@ namespace DebugUtilityMod
 
             hasInvincibility = Config.Bind("Invincibility", "Player Invincibility", false, "If active, the player cannot take damage");
 
+            hasInfiniteReroll = Config.Bind("Reroll", "Infinite Reroll", false, "If active, every character can reroll indefinitly");
 
             try
             {
@@ -49,6 +51,18 @@ namespace DebugUtilityMod
                 Logger.LogError($"{PLUGIN_GUID} failed to patch methods (InvincibilityPatch).");
             }
 
+            try
+            {
+                if (hasInfiniteReroll.Value)
+                {
+                    Harmony.CreateAndPatchAll(typeof(RerollPatch));
+                }
+                Logger.LogInfo((hasInfiniteReroll.Value ? "<Active>" : "<Inactive>") + " Infinite Reroll");
+            }
+            catch
+            {
+                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (RerollPatch).");
+            }
             try
             {
                 if (hasXPPatch.Value)

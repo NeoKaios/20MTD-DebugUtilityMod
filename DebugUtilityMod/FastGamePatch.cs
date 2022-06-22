@@ -74,7 +74,7 @@ namespace DebugUtilityMod
             {
                 return true;
             }
-            if (!isBoss)
+            if (isBoss) // beacause bossLoad execute after
             {
                 lastGamemode = isStandard ? 's' : 'q';
             }

@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="DebugUtilityPlugin.cs" />
     <Compile Include="FastGamePatch.cs" />
+    <Compile Include="RerollPatch.cs" />
     <Compile Include="XPPatch.cs" />
     <Compile Include="InvincibilityPatch.cs" />
     <Compile Include="NoUnlockPatch.cs" />
