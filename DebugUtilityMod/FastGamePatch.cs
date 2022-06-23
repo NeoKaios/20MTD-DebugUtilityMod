@@ -9,16 +9,26 @@ namespace DebugUtilityMod
     {
         static private float prev_timer = 0;
         static private char lastGamemode = '\0';
+        static bool isTraverseTimerCreated = false;
+        static Traverse timer;
 
         [HarmonyPatch(typeof(GameTimer), "Update")]
         [HarmonyPostfix]
         static void GameTimerUpdate_post(ref GameTimer __instance, bool ____isPlaying)
         {
             // Apply a X-fold multiplier to GameTimer speed
+            if(!isTraverseTimerCreated)
+            {
+                timer = Traverse.Create(__instance).Property("timer");
+                isTraverseTimerCreated = true;
+            }
+
             if (____isPlaying)
             {
                 float delta = __instance.timer - prev_timer;
-                Traverse.Create(__instance).Property("timer").SetValue(prev_timer + delta * DebugUtilityPlugin.gametimerMult.Value);
+                //Traverse.Create(__instance).Property("timer").SetValue(prev_timer + delta * DebugUtilityPlugin.gametimerMult.Value);
+                timer.SetValue(prev_timer + delta * DebugUtilityPlugin.gametimerMult.Value);
+
                 prev_timer = __instance.timer;
             }
         }
@@ -29,6 +39,7 @@ namespace DebugUtilityMod
         {
             // Timer reset
             prev_timer = 0;
+            isTraverseTimerCreated = false;
         }
 
         [HarmonyPatch(typeof(BossSpawner), "LoadSpawners")]

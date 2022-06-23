@@ -12,6 +12,9 @@ namespace DebugUtilityMod
         public const string PLUGIN_VERSION = "1.1";
 
 
+        public static ConfigEntry<bool> activateMod;
+
+
         public static ConfigEntry<float> gametimerMult;
         public static ConfigEntry<float> XPmult;
         public static ConfigEntry<int> stopXPAtLevel;
@@ -28,6 +31,7 @@ namespace DebugUtilityMod
 
         public void Awake()
         {
+            activateMod = Config.Bind("_General", "Activation", true, "If false, the mod does not load");
             hasXPPatch = Config.Bind("XP Patch", "XP Patch activation", false, "Set to True to activate XP Patch");
             XPmult = Config.Bind("XP Patch", "XP multiplier", 1f, "Amount of multiplication bonus applied to XP pickup");
             stopXPAtLevel = Config.Bind("XP Patch", "Stop leveling up after X level", 100, "Level after which the player stop receiving XP");
@@ -40,6 +44,12 @@ namespace DebugUtilityMod
             hasInfiniteReroll = Config.Bind("Reroll", "Infinite Reroll", false, "If active, every character can reroll indefinitly");
 
             hasGunPatch = Config.Bind("Gun", "Infinite Ammo", false, "If active, infinite ammo");
+
+            if (!activateMod.Value)
+            {
+                Logger.LogInfo("<Inactive>");
+                return;
+            }
 
             try
             {
