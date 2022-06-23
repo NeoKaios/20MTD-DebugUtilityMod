@@ -17,7 +17,7 @@ namespace DebugUtilityMod
 
         public static ConfigEntry<float> gametimerMult;
         public static ConfigEntry<float> XPmult;
-        public static ConfigEntry<int> stopXPAtLevel;
+        public static ConfigEntry<int> maxPlayerLevel;
         public static ConfigEntry<bool> hasXPPatch;
         public static ConfigEntry<bool> hasInvincibility;
         public static ConfigEntry<bool> hasFastGame;
@@ -33,11 +33,11 @@ namespace DebugUtilityMod
         {
             activateMod = Config.Bind("_General", "Activation", true, "If false, the mod does not load");
             hasXPPatch = Config.Bind("XP Patch", "XP Patch activation", false, "Set to True to activate XP Patch");
-            XPmult = Config.Bind("XP Patch", "XP multiplier", 1f, "Amount of multiplication bonus applied to XP pickup");
-            stopXPAtLevel = Config.Bind("XP Patch", "Stop leveling up after X level", 100, "Level after which the player stop receiving XP");
+            XPmult = Config.Bind("XP Patch", "XP multiplier", 1f, "Amount of multiplication bonus applied to XP pickup, 1 is baseXP");
+            maxPlayerLevel = Config.Bind("XP Patch", "Max level reachable", 100, "Level after which the player stop receiving XP");
 
             hasFastGame = Config.Bind("Fast GameTimer", "FastGame activation", false, "Set to True to activate faster game");
-            gametimerMult = Config.Bind("Fast GameTimer", "GameTimer multiplier", 2f, "Increase the speed of the game (if 2, standard lasts 20/2 = 10 min)");
+            gametimerMult = Config.Bind("Fast GameTimer", "GameTimer speed", 2f, "Increase the speed of the game; x is baseTime/x, 1 is baseTime");
 
             hasInvincibility = Config.Bind("Invincibility", "Player Invincibility", false, "If active, the player cannot take damage");
 
@@ -94,7 +94,7 @@ namespace DebugUtilityMod
                 {
                     Harmony.CreateAndPatchAll(typeof(XPPatch));
                 }
-                Logger.LogInfo(hasXPPatch.Value ? "<Active> XPPatch     XP = " + XPmult.Value+ "*baseXP  StopLevel = " + stopXPAtLevel.Value : "<Inactive> FastXP");
+                Logger.LogInfo(hasXPPatch.Value ? "<Active> XPPatch     XP = " + XPmult.Value+ "*baseXP  MaxLevel = " + maxPlayerLevel.Value : "<Inactive> FastXP");
             }
             catch
             {
