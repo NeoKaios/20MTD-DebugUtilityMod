@@ -23,6 +23,8 @@ namespace DebugUtilityMod
         public static ConfigEntry<bool> hasFastGame;
         public static ConfigEntry<bool> hasInfiniteReroll;
         public static ConfigEntry<bool> hasGunPatch;
+        public static ConfigEntry<bool> hasWeakBossesAndElites;
+        
 
         //public static ConfigEntry<bool> hasUnlocks;
         //public static ConfigEntry<bool> hasSoulUnlock;
@@ -44,6 +46,7 @@ namespace DebugUtilityMod
             hasInfiniteReroll = Config.Bind("Reroll", "Infinite Reroll", false, "If active, every character can reroll indefinitly");
 
             hasGunPatch = Config.Bind("Gun", "Infinite Ammo", false, "If active, infinite ammo");
+            hasWeakBossesAndElites = Config.Bind("Enemy", "Weak Bosses and Elite", false, "If active, Bosses and Elite have 100 HP");
 
             if (!activateMod.Value)
             {
@@ -112,6 +115,19 @@ namespace DebugUtilityMod
             catch
             {
                 Logger.LogError($"{PLUGIN_GUID} failed to patch methods (FastGamePatch).");
+            }
+
+            try
+            {
+                if (hasWeakBossesAndElites.Value)
+                {
+                    Harmony.CreateAndPatchAll(typeof(EnemyPatch));
+                }
+                Logger.LogInfo((hasInvincibility.Value ? "<Active>" : "<Inactive>") + " Weak Bosses & Elites");
+            }
+            catch
+            {
+                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (EnemyPatch).");
             }
 
             try
