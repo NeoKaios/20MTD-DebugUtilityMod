@@ -19,11 +19,11 @@ namespace DebugUtilityMod
         public static ConfigEntry<bool> hasInfiniteReroll;
         public static ConfigEntry<bool> hasGunPatch;
         public static ConfigEntry<bool> hasWeakBossesAndElites;
-        
+
 
         //public static ConfigEntry<bool> hasUnlocks;
         //public static ConfigEntry<bool> hasSoulUnlock;
-        
+
 
 
         public void Awake()
@@ -118,7 +118,7 @@ namespace DebugUtilityMod
                 {
                     Harmony.CreateAndPatchAll(typeof(EnemyPatch));
                 }
-                Logger.LogInfo((hasInvincibility.Value ? "<Active>" : "<Inactive>") + " Weak Bosses & Elites");
+                Logger.LogInfo((hasWeakBossesAndElites.Value ? "<Active>" : "<Inactive>") + " Weak Bosses & Elites");
             }
             catch
             {
