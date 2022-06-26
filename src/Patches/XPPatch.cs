@@ -9,6 +9,7 @@ namespace DebugUtilityMod
     {
         static bool doGainXP = true;
         static int lvl = 1;
+
         [HarmonyPatch(typeof(PlayerXP), "Awake")]
         [HarmonyPostfix]
         static void PlayerXPAwake_postfix(ref StatMod ___xpMultiplier)
@@ -24,9 +25,10 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static bool GainXP_prefix()
         {
+            //Skip XP gain if playerLVL >= maxLVL
             return doGainXP;
         }
-            
+
         [HarmonyPatch(typeof(CombatState), "OnLevelUP")]
         [HarmonyPrefix]
         static void OnLevelUp_prefix()

@@ -6,9 +6,9 @@ namespace DebugUtilityMod
 {
     class InvincibilityPatch
     {
-        [HarmonyPatch(typeof(CombatState), "Enter")]
+        [HarmonyPatch(typeof(InitState), "Exit")]
         [HarmonyPostfix]
-        static void CombatStateEnter_postfix(ref CombatState __instance)
+        static void InitStateExit_postfix(ref InitState __instance)
         {
             //Flip invincibility bool
             ((Health)Traverse.Create(__instance).Property("playerHealth").GetValue()).isInvincible.Flip();

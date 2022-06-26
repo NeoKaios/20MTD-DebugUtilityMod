@@ -7,29 +7,23 @@ namespace DebugUtilityMod
 {
     static class RerollPatch
     {
+        static Button reroolButton;
         [HarmonyPatch(typeof(InitState), "Enter")]
         [HarmonyPrefix]
-        static void Enter_prefix(ref PowerupMenuState __instance)
+        static void InitStateEnter_prefix(ref PowerupMenuState __instance)
         {
             // Set reroll button active to give the reroll passive to every character
             //((Button)Traverse.Create(__instance).Property("powerupRerollButton").GetValue()).gameObject.SetActive(true);
             PowerupGenerator.CanReroll = true;
+            reroolButton = ((Button)Traverse.Create(__instance).Property("powerupRerollButton").GetValue());
         }
-        /*
-        [HarmonyPatch(typeof(PowerupMenuState), "Enter")]
-        [HarmonyPostfix]
-        static void Enter_postfix(ref PowerupMenuState __instance)
-        {
-            // Set reroll button active to give the reroll passive to every character
-            ((Button)Traverse.Create(__instance).Property("powerupRerollButton").GetValue()).gameObject.SetActive(true);
-        }
-        */
+
         [HarmonyPatch(typeof(PowerupMenuState), "OnReroll")]
         [HarmonyPostfix]
         static void OnReroll_postfix(ref PowerupMenuState __instance)
         {
             // Set reroll button active after reroll, to obtain infinite reroll
-            ((Button)Traverse.Create(__instance).Property("powerupRerollButton").GetValue()).gameObject.SetActive(true);
+            reroolButton.gameObject.SetActive(true);
         }
     }
 }

@@ -77,7 +77,7 @@ namespace DebugUtilityMod
             }
         }
 
-        // This is useful trust me, avoid reducing twice spawn timers, 
+        // This is useful trust me, avoid reducing twice spawn timers,
         static private bool IsDone(bool isBoss)
         {
             bool isStandard = SelectedMap.MapData.nameStringID.key == "standard_mode_name";
@@ -91,7 +91,6 @@ namespace DebugUtilityMod
             }
             return false;
         }
-
 
         [HarmonyPatch(typeof(SummonEgg), "Start")]
         [HarmonyPrefix]

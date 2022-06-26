@@ -7,7 +7,7 @@ namespace DebugUtilityMod
 {
     class EnemyPatch
     {
-        
+
         // Weak elites and bosses
         [HarmonyPatch(typeof(BossSpawner), "LoadSpawners")]
         [HarmonyPrefix]
@@ -15,8 +15,8 @@ namespace DebugUtilityMod
         {
             foreach (BossSpawn bs in spawners)
             {
-                Health h = bs.bossPrefab.GetComponent<Health>();
-                h.maxHP = 100;
+                Health bossHealth = bs.bossPrefab.GetComponent<Health>();
+                bossHealth.maxHP = 100;
             }
         }
 
@@ -24,11 +24,11 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void HordeLoadSpawners_prefix(ref List<SpawnSession> spawnSessions)
         {
-            foreach (SpawnSession ss in spawnSessions)
+            foreach (SpawnSession spawnSession in spawnSessions)
             {
-                if (ss.isElite)
+                if (spawnSession.isElite)
                 {
-                    ss.HP = 100;
+                    spawnSession.HP = 100;
                 }
             }
 
