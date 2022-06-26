@@ -4,14 +4,9 @@ using BepInEx.Configuration;
 
 namespace DebugUtilityMod
 {
-    [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
+    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class DebugUtilityPlugin : BaseUnityPlugin
     {
-        public const string PLUGIN_GUID = "kaios.mod.debugutility";
-        public const string PLUGIN_NAME = "Debug Utility Mod";
-        public const string PLUGIN_VERSION = "1.1";
-
-
         public static ConfigEntry<bool> activateMod;
 
 
@@ -28,7 +23,7 @@ namespace DebugUtilityMod
 
         //public static ConfigEntry<bool> hasUnlocks;
         //public static ConfigEntry<bool> hasSoulUnlock;
-
+        
 
 
         public void Awake()
@@ -64,7 +59,7 @@ namespace DebugUtilityMod
             }
             catch
             {
-                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (InvincibilityPatch).");
+                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (InvincibilityPatch).");
             }
 
             try
@@ -77,7 +72,7 @@ namespace DebugUtilityMod
             }
             catch
             {
-                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (GunPatch).");
+                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (GunPatch).");
             }
             try
             {
@@ -89,7 +84,7 @@ namespace DebugUtilityMod
             }
             catch
             {
-                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (RerollPatch).");
+                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (RerollPatch).");
             }
             try
             {
@@ -101,7 +96,7 @@ namespace DebugUtilityMod
             }
             catch
             {
-                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (XPPatch).");
+                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (XPPatch).");
             }
 
             try
@@ -114,7 +109,7 @@ namespace DebugUtilityMod
             }
             catch
             {
-                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (FastGamePatch).");
+                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (FastGamePatch).");
             }
 
             try
@@ -127,7 +122,7 @@ namespace DebugUtilityMod
             }
             catch
             {
-                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (EnemyPatch).");
+                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (EnemyPatch).");
             }
 
             try
@@ -137,7 +132,7 @@ namespace DebugUtilityMod
             }
             catch
             {
-                Logger.LogError($"{PLUGIN_GUID} failed to patch methods (NoUnlockPatch).");
+                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (NoUnlockPatch).");
             }
         }
     }

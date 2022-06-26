@@ -13,11 +13,19 @@ Modders can change config values via the BepInEx config file : BepInEx/config/ka
 - Invincibility : Avoid any damage
 - GunPatch      : Infinite Ammo
 - RerollPatch   : Every character has infinite reroll
-- EnemyPatch    : Elite and bosses are instakill (WIP)
+- EnemyPatch    : Elite and bosses are weak
 
 ### No Pain, No Gain
 
-To avoid currupting save file during test runs, this mod prevents 
+To avoid currupting save file during test runs, this mod prevents
 - Unlocking new darkness level
 - Unlocking new achievements
 - Gaining soul currency
+
+## For modders
+
+- Clone the project
+- Open repo in VSCode
+- Setup $GameDir variable in *DebugUtilityMod.csproj*
+- ```dotnet build``` to build and deploy mod
+- ```dotnet publish``` to publish a .zip file

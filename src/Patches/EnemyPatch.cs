@@ -7,6 +7,7 @@ namespace DebugUtilityMod
 {
     class EnemyPatch
     {
+        
         // Weak elites and bosses
         [HarmonyPatch(typeof(BossSpawner), "LoadSpawners")]
         [HarmonyPrefix]
