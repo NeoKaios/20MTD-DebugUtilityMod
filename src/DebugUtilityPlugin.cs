@@ -1,6 +1,8 @@
 ﻿using BepInEx;
 using HarmonyLib;
 using BepInEx.Configuration;
+using System.Reflection;
+using System.Collections.Generic;
 
 namespace DebugUtilityMod
 {
@@ -20,11 +22,9 @@ namespace DebugUtilityMod
         public static ConfigEntry<bool> hasGunPatch;
         public static ConfigEntry<bool> hasWeakBossesAndElites;
 
+        private static Dictionary<string, ConfigEntry<bool>> _configEntries;
 
-        //public static ConfigEntry<bool> hasUnlocks;
-        //public static ConfigEntry<bool> hasSoulUnlock;
-
-
+        private static bool _enabledThisSession = false;
 
         public void Awake()
         {
@@ -43,97 +43,70 @@ namespace DebugUtilityMod
             hasGunPatch = Config.Bind("Gun", "Infinite Ammo", false, "If active, infinite ammo");
             hasWeakBossesAndElites = Config.Bind("Enemy", "Weak Bosses and Elite", false, "If active, Bosses and Elite have 100 HP");
 
+            _configEntries = new Dictionary<string, ConfigEntry<bool>>()
+            {
+                { "Invincibility", hasInvincibility },
+                { "GunPatch", hasGunPatch },
+                { "Infinite Reroll", hasInfiniteReroll },
+                { "FastXP", hasXPPatch },
+                { "FastGame", hasFastGame },
+                { "Weak Bosses & Elites", hasWeakBossesAndElites },
+                { "FastGame", hasFastGame },
+            };
+
+            try
+            {
+                Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+            }
+            catch
+            {
+                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods.");
+            }
+
             if (!activateMod.Value)
             {
                 Logger.LogInfo("<Inactive>");
                 return;
             }
 
-            try
+            foreach(var configEntry in _configEntries)
             {
-                if (hasInvincibility.Value)
+                if (configEntry.Value == hasXPPatch)
                 {
-                    Harmony.CreateAndPatchAll(typeof(InvincibilityPatch));
+                    Logger.LogInfo(configEntry.Value.Value ? $"<Active> XPPatch     XP = {XPmult.Value}*baseXP  MaxLevel = {maxPlayerLevel.Value}" : "<Inactive> FastGame");
                 }
-                Logger.LogInfo((hasInvincibility.Value ? "<Active>" : "<Inactive>") + " Invincibility");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (InvincibilityPatch).");
+                else if (configEntry.Value == hasFastGame)
+                {
+                    Logger.LogInfo(configEntry.Value.Value ? $"<Active> FastGame    duration = baseTime/{gametimerMult.Value}" : "<Inactive> FastGame");
+                }
+                else
+                {
+                    Logger.LogInfo($"{(configEntry.Value.Value ? "<Active>" : "<Inactive>")} {configEntry.Key}");
+                }
             }
 
-            try
+            // no unlocks/nosoulgain should always be active when anything is active, to avoid cheating
+        }
+
+        public static bool ProgressionAllowed()
+        {
+            // progression should be blanket blocked if anything has been enabled this session
+            // this could be made smarter by checking per-run, but for now it's safe to err on the side of caution
+            if (_enabledThisSession) return !_enabledThisSession;
+
+            bool anyPatchesEnabled = false;
+            foreach(var patch in _configEntries)
             {
-                if (hasGunPatch.Value)
-                {
-                    Harmony.CreateAndPatchAll(typeof(GunPatch));
-                }
-                Logger.LogInfo((hasGunPatch.Value ? "<Active>" : "<Inactive>") + " GunPatch");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (GunPatch).");
-            }
-            try
-            {
-                if (hasInfiniteReroll.Value)
-                {
-                    Harmony.CreateAndPatchAll(typeof(RerollPatch));
-                }
-                Logger.LogInfo((hasInfiniteReroll.Value ? "<Active>" : "<Inactive>") + " Infinite Reroll");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (RerollPatch).");
-            }
-            try
-            {
-                if (hasXPPatch.Value)
-                {
-                    Harmony.CreateAndPatchAll(typeof(XPPatch));
-                }
-                Logger.LogInfo(hasXPPatch.Value ? "<Active> XPPatch     XP = " + XPmult.Value+ "*baseXP  MaxLevel = " + maxPlayerLevel.Value : "<Inactive> FastXP");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (XPPatch).");
+                if(patch.Value.Value) anyPatchesEnabled = true;
             }
 
-            try
+            if (anyPatchesEnabled && activateMod.Value)
             {
-                if (hasFastGame.Value && gametimerMult.Value != 0)
-                {
-                    Harmony.CreateAndPatchAll(typeof(FastGamePatch));
-                }
-                Logger.LogInfo(hasFastGame.Value && gametimerMult.Value != 0 ? "<Active> FastGame    duration = baseTime/" + gametimerMult.Value : "<Inactive> FastGame");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (FastGamePatch).");
+                _enabledThisSession = true;
+                return false;
             }
 
-            try
-            {
-                if (hasWeakBossesAndElites.Value)
-                {
-                    Harmony.CreateAndPatchAll(typeof(EnemyPatch));
-                }
-                Logger.LogInfo((hasWeakBossesAndElites.Value ? "<Active>" : "<Inactive>") + " Weak Bosses & Elites");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (EnemyPatch).");
-            }
-
-            try
-            {
-                Harmony.CreateAndPatchAll(typeof(NoUnlockPatch));
-                Logger.LogInfo("<Active> NoUnlocks & NoSoulGain");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (NoUnlockPatch).");
-            }
+            return true;
         }
     }
 }

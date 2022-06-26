@@ -12,14 +12,14 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static bool CheckDifficultyUnlock_prefix()
         {
-            return false;
+            return DebugUtilityPlugin.ProgressionAllowed();
         }
 
         [HarmonyPatch(typeof(PlayerSurvivedState), "CheckAchievmentUnlocks")]
         [HarmonyPrefix]
         static bool CheckAchievmentUnlocks_prefix()
         {
-            return false;
+            return DebugUtilityPlugin.ProgressionAllowed();
         }
 
         [HarmonyPatch(typeof(ScoreCalculator), "GetScore")]
@@ -27,17 +27,22 @@ namespace DebugUtilityMod
         static void GetScore_postfix(ref Score __result)
         {
             // Modify score return value so that run with debug mode don't give any soul
-            __result.enemiesKilledScore = 0;
-            __result.levelsEarnedScore = 0;
-            __result.timeSurvivedScore = 0;
+            if (!DebugUtilityPlugin.ProgressionAllowed())
+            {
+                __result.enemiesKilledScore = 0;
+                __result.levelsEarnedScore = 0;
+                __result.timeSurvivedScore = 0;
+            }
         }
 
         [HarmonyPatch(typeof(EndScreenUIC), "SetScores")]
         [HarmonyPostfix]
         static void SetScores_postfix(ref TMP_Text ___totalScoreTMP)
         {
-
-            ___totalScoreTMP.text += "     DebugMod is active";
+            if (!DebugUtilityPlugin.ProgressionAllowed())
+            {
+                ___totalScoreTMP.text += "     DebugMod is active";
+            }
         }
     }
 }
