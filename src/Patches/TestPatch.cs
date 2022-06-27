@@ -8,12 +8,12 @@ namespace DebugUtilityMod
     class TestPatch
     {
 
-        [HarmonyPatch(typeof(Ammo), "Start")]
+        /*[HarmonyPatch(typeof(Ammo), "Start")]
         [HarmonyPostfix]
         static void AmmoStart_postfix(ref Ammo __instance)
         {
             __instance.infiniteAmmo.Flip();
 
-        }
+        }*/
     }
 }

@@ -1,8 +1,11 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using BepInEx.Bootstrap;
 using BepInEx.Configuration;
-using System.Reflection;
 using System.Collections.Generic;
+using System;
+using System.Linq;
+using System.Reflection;
 
 namespace DebugUtilityMod
 {
@@ -26,7 +29,21 @@ namespace DebugUtilityMod
 
         private static bool _enabledThisSession = false;
 
-        public void Awake()
+        private MethodInfo _registerMethod = null;
+        private void RegisterWithReflection<T>(ConfigEntry<T> configEntry, List<T> acceptableValues = null)
+        {
+            if(_registerMethod == null)
+            {
+                var modOptionsType = Traverse.CreateWithType("MTDUI.ModOptions").GetValue() as Type;
+                _registerMethod = modOptionsType.GetMethod("Register", BindingFlags.Public | BindingFlags.Static);
+            }
+
+            _registerMethod.MakeGenericMethod(new Type[] { typeof(T) }).Invoke(null, new object[]{ configEntry, acceptableValues });
+        }
+
+        // moved to Start instead of Awake so we can use Chainloader after it's fully loaded
+        // this can be reverted once we don't need to use reflection for registration
+        public void Start()
         {
             activateMod = Config.Bind("_General", "Activation", true, "If false, the mod does not load");
             hasXPPatch = Config.Bind("XP Patch", "XP Patch activation", false, "Set to True to activate XP Patch");
@@ -43,6 +60,42 @@ namespace DebugUtilityMod
             hasGunPatch = Config.Bind("Gun", "Infinite Ammo", false, "If active, infinite ammo");
             hasWeakBossesAndElites = Config.Bind("Enemy", "Weak Bosses and Elite", false, "If active, Bosses and Elite have 100 HP");
 
+            var mtdui = Chainloader.PluginInfos.FirstOrDefault(x => x.Key == "dev.bobbie.20mtd.mtdui");
+            if(mtdui.Value != null)
+            {
+
+                try
+                {
+                    // This bit is temporary
+                    // Since nexus has no proper dependency resolution, I've opted to use reflection so the mod still works without MTDUI
+                    // once we migrate from nexus to thunderstore, the chainloader check and reflection bit can be removed
+                    // and MTDUI can explicitly be added as a dependency
+                    RegisterWithReflection(hasXPPatch);
+                    RegisterWithReflection(XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f });
+                    RegisterWithReflection(maxPlayerLevel, new List<int>() { 50, 100, 200, 500, 1000 });
+                    RegisterWithReflection(hasFastGame);
+                    RegisterWithReflection(gametimerMult, new List<float>() { 0.5f, 1f, 2f, 5f, 10f, 100f });
+                    RegisterWithReflection(hasInvincibility);
+                    RegisterWithReflection(hasInfiniteReroll);
+                    RegisterWithReflection(hasGunPatch);
+                    RegisterWithReflection(hasWeakBossesAndElites);
+                    /*
+                    MTDUI.ModOptions.Register(hasXPPatch);
+                    MTDUI.ModOptions.Register(XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f });
+                    MTDUI.ModOptions.Register(maxPlayerLevel, new List<int>() { 50, 100, 200, 500, 1000 });
+                    MTDUI.ModOptions.Register(hasFastGame);
+                    MTDUI.ModOptions.Register(gametimerMult, new List<float>() { 0.5f, 1f, 2f, 5f, 10f, 100f });
+                    MTDUI.ModOptions.Register(hasInvincibility);
+                    MTDUI.ModOptions.Register(hasInfiniteReroll);
+                    MTDUI.ModOptions.Register(hasGunPatch);
+                    MTDUI.ModOptions.Register(hasWeakBossesAndElites);
+                    */
+                }
+                catch (Exception ex) { 
+                    Logger.LogError(ex);
+                }
+            }
+
             _configEntries = new Dictionary<string, ConfigEntry<bool>>()
             {
                 { "Invincibility", hasInvincibility },
@@ -50,8 +103,7 @@ namespace DebugUtilityMod
                 { "Infinite Reroll", hasInfiniteReroll },
                 { "FastXP", hasXPPatch },
                 { "FastGame", hasFastGame },
-                { "Weak Bosses & Elites", hasWeakBossesAndElites },
-                { "FastGame", hasFastGame },
+                { "Weak Bosses & Elites", hasWeakBossesAndElites }
             };
 
             try
@@ -73,7 +125,7 @@ namespace DebugUtilityMod
             {
                 if (configEntry.Value == hasXPPatch)
                 {
-                    Logger.LogInfo(configEntry.Value.Value ? $"<Active> XPPatch     XP = {XPmult.Value}*baseXP  MaxLevel = {maxPlayerLevel.Value}" : "<Inactive> FastGame");
+                    Logger.LogInfo(configEntry.Value.Value ? $"<Active> XPPatch     XP = {XPmult.Value}*baseXP  MaxLevel = {maxPlayerLevel.Value}" : "<Inactive> XPPatch");
                 }
                 else if (configEntry.Value == hasFastGame)
                 {
@@ -84,12 +136,11 @@ namespace DebugUtilityMod
                     Logger.LogInfo($"{(configEntry.Value.Value ? "<Active>" : "<Inactive>")} {configEntry.Key}");
                 }
             }
-
-            // no unlocks/nosoulgain should always be active when anything is active, to avoid cheating
         }
 
         public static bool ProgressionAllowed()
         {
+            // nounlocks/nosoulgain should always be active when anything is active, to avoid cheating
             // progression should be blanket blocked if anything has been enabled this session
             // this could be made smarter by checking per-run, but for now it's safe to err on the side of caution
             if (_enabledThisSession) return !_enabledThisSession;

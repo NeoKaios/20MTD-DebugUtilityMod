@@ -6,6 +6,7 @@ using flanne.UI;
 
 namespace DebugUtilityMod
 {
+    [HarmonyPatch]
     class NoUnlockPatch
     {
         [HarmonyPatch(typeof(PlayerSurvivedState), "CheckDifficultyUnlock")]

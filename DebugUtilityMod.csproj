@@ -11,7 +11,7 @@
 
 	<PropertyGroup Label="Variables">
 		<!-- SET BELOW TO GAME BASE DIRECTORY-->
-		<GameDir>W:\SteamLibrary\steamapps\common\20MinuteTillDawn</GameDir>
+		<GameDir>C:\Program Files (x86)\Steam\steamapps\common\20MinuteTillDawn</GameDir>
 		<BepInExDir>$(GameDir)\BepInEx</BepInExDir>
 		<GameLibDir>$(GameDir)\MinutesTillDawn_Data\Managed</GameLibDir>
 	</PropertyGroup>
