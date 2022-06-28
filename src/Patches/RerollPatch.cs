@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 namespace DebugUtilityMod
 {
+    [HarmonyPatch]
     static class RerollPatch
     {
         static Button reroolButton;
@@ -12,6 +13,8 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void InitStateEnter_prefix(ref PowerupMenuState __instance)
         {
+            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasInfiniteReroll)) return;
+
             // Set reroll button active to give the reroll passive to every character
             //((Button)Traverse.Create(__instance).Property("powerupRerollButton").GetValue()).gameObject.SetActive(true);
             PowerupGenerator.CanReroll = true;
@@ -22,6 +25,8 @@ namespace DebugUtilityMod
         [HarmonyPostfix]
         static void OnReroll_postfix(ref PowerupMenuState __instance)
         {
+            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasInfiniteReroll)) return;
+
             // Set reroll button active after reroll, to obtain infinite reroll
             reroolButton.gameObject.SetActive(true);
         }

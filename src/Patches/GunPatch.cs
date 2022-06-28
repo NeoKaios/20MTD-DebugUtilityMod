@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace DebugUtilityMod
 {
+    [HarmonyPatch]
     class GunPatch
     {
 
@@ -12,8 +13,9 @@ namespace DebugUtilityMod
         [HarmonyPostfix]
         static void AmmoStart_postfix(ref Ammo __instance)
         {
-            __instance.infiniteAmmo.Flip();
+            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasGunPatch)) return;
 
+            __instance.infiniteAmmo.Flip();
         }
     }
 }

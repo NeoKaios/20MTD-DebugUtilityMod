@@ -1,6 +1,11 @@
 ﻿using BepInEx;
-using HarmonyLib;
+using BepInEx.Bootstrap;
 using BepInEx.Configuration;
+using HarmonyLib;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace DebugUtilityMod
 {
@@ -20,13 +25,25 @@ namespace DebugUtilityMod
         public static ConfigEntry<bool> hasGunPatch;
         public static ConfigEntry<bool> hasWeakBossesAndElites;
 
+        private static Dictionary<string, ConfigEntry<bool>> _configEntries;
 
-        //public static ConfigEntry<bool> hasUnlocks;
-        //public static ConfigEntry<bool> hasSoulUnlock;
+        private static bool _enabledThisSession = false;
 
+        private MethodInfo _registerMethod = null;
+        private void RegisterWithReflection<T>(ConfigEntry<T> configEntry, List<T> acceptableValues = null)
+        {
+            if(_registerMethod == null)
+            {
+                var modOptionsType = Traverse.CreateWithType("MTDUI.ModOptions").GetValue() as Type;
+                _registerMethod = modOptionsType.GetMethod("Register", BindingFlags.Public | BindingFlags.Static);
+            }
 
+            _registerMethod.MakeGenericMethod(new Type[] { typeof(T) }).Invoke(null, new object[]{ configEntry, acceptableValues });
+        }
 
-        public void Awake()
+        // moved to Start instead of Awake so we can use Chainloader after it's fully loaded
+        // this can be reverted once we don't need to use reflection for registration
+        public void Start()
         {
             activateMod = Config.Bind("_General", "Activation", true, "If false, the mod does not load");
             hasXPPatch = Config.Bind("XP Patch", "XP Patch activation", false, "Set to True to activate XP Patch");
@@ -43,97 +60,114 @@ namespace DebugUtilityMod
             hasGunPatch = Config.Bind("Gun", "Infinite Ammo", false, "If active, infinite ammo");
             hasWeakBossesAndElites = Config.Bind("Enemy", "Weak Bosses and Elite", false, "If active, Bosses and Elite have 100 HP");
 
+            var mtdui = Chainloader.PluginInfos.FirstOrDefault(x => x.Key == "dev.bobbie.20mtd.mtdui");
+            if(mtdui.Value != null)
+            {
+
+                try
+                {
+                    // This bit is temporary
+                    // Since nexus has no proper dependency resolution, I've opted to use reflection so the mod still works without MTDUI
+                    // once we migrate from nexus to thunderstore, the chainloader check and reflection bit can be removed
+                    // and MTDUI can explicitly be added as a dependency
+                    RegisterWithReflection(hasXPPatch);
+                    RegisterWithReflection(XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f });
+                    RegisterWithReflection(maxPlayerLevel, new List<int>() { 50, 100, 200, 500, 1000 });
+                    RegisterWithReflection(hasFastGame);
+                    RegisterWithReflection(gametimerMult, new List<float>() { 0.5f, 1f, 2f, 5f, 10f, 100f });
+                    RegisterWithReflection(hasInvincibility);
+                    RegisterWithReflection(hasInfiniteReroll);
+                    RegisterWithReflection(hasGunPatch);
+                    RegisterWithReflection(hasWeakBossesAndElites);
+                    /*
+                    MTDUI.ModOptions.Register(hasXPPatch);
+                    MTDUI.ModOptions.Register(XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f });
+                    MTDUI.ModOptions.Register(maxPlayerLevel, new List<int>() { 50, 100, 200, 500, 1000 });
+                    MTDUI.ModOptions.Register(hasFastGame);
+                    MTDUI.ModOptions.Register(gametimerMult, new List<float>() { 0.5f, 1f, 2f, 5f, 10f, 100f });
+                    MTDUI.ModOptions.Register(hasInvincibility);
+                    MTDUI.ModOptions.Register(hasInfiniteReroll);
+                    MTDUI.ModOptions.Register(hasGunPatch);
+                    MTDUI.ModOptions.Register(hasWeakBossesAndElites);
+                    */
+                }
+                catch (Exception ex) { 
+                    Logger.LogError(ex);
+                }
+            }
+
+            _configEntries = new Dictionary<string, ConfigEntry<bool>>()
+            {
+                { "Invincibility", hasInvincibility },
+                { "GunPatch", hasGunPatch },
+                { "Infinite Reroll", hasInfiniteReroll },
+                { "FastXP", hasXPPatch },
+                { "FastGame", hasFastGame },
+                { "Weak Bosses & Elites", hasWeakBossesAndElites }
+            };
+
+            try
+            {
+                Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+            }
+            catch
+            {
+                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods.");
+            }
+
             if (!activateMod.Value)
             {
                 Logger.LogInfo("<Inactive>");
                 return;
             }
 
-            try
+            foreach(var configEntry in _configEntries)
             {
-                if (hasInvincibility.Value)
+                if (configEntry.Value == hasXPPatch)
                 {
-                    Harmony.CreateAndPatchAll(typeof(InvincibilityPatch));
+                    Logger.LogInfo(configEntry.Value.Value ? $"<Active> XPPatch     XP = {XPmult.Value}*baseXP  MaxLevel = {maxPlayerLevel.Value}" : "<Inactive> XPPatch");
                 }
-                Logger.LogInfo((hasInvincibility.Value ? "<Active>" : "<Inactive>") + " Invincibility");
+                else if (configEntry.Value == hasFastGame)
+                {
+                    Logger.LogInfo(configEntry.Value.Value ? $"<Active> FastGame    duration = baseTime/{gametimerMult.Value}" : "<Inactive> FastGame");
+                }
+                else
+                {
+                    Logger.LogInfo($"{(configEntry.Value.Value ? "<Active>" : "<Inactive>")} {configEntry.Key}");
+                }
             }
-            catch
+        }
+        
+        public static bool PatchEnabled(ConfigEntry<bool> configEntry)
+        {
+            if (activateMod.Value && configEntry.Value)
             {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (InvincibilityPatch).");
+                _enabledThisSession = true;
+                return true;
+            }
+            else return false;
+        }
+
+        public static bool ProgressionAllowed()
+        {
+            // nounlocks/nosoulgain should always be active when anything is active, to avoid cheating
+            // progression should be blanket blocked if anything has been enabled this session
+            // this could be made smarter by checking per-run, but for now it's safe to err on the side of caution
+            if (_enabledThisSession) return !_enabledThisSession;
+
+            bool anyPatchesEnabled = false;
+            foreach(var patch in _configEntries)
+            {
+                if(patch.Value.Value) anyPatchesEnabled = true;
             }
 
-            try
+            if (anyPatchesEnabled && activateMod.Value)
             {
-                if (hasGunPatch.Value)
-                {
-                    Harmony.CreateAndPatchAll(typeof(GunPatch));
-                }
-                Logger.LogInfo((hasGunPatch.Value ? "<Active>" : "<Inactive>") + " GunPatch");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (GunPatch).");
-            }
-            try
-            {
-                if (hasInfiniteReroll.Value)
-                {
-                    Harmony.CreateAndPatchAll(typeof(RerollPatch));
-                }
-                Logger.LogInfo((hasInfiniteReroll.Value ? "<Active>" : "<Inactive>") + " Infinite Reroll");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (RerollPatch).");
-            }
-            try
-            {
-                if (hasXPPatch.Value)
-                {
-                    Harmony.CreateAndPatchAll(typeof(XPPatch));
-                }
-                Logger.LogInfo(hasXPPatch.Value ? "<Active> XPPatch     XP = " + XPmult.Value+ "*baseXP  MaxLevel = " + maxPlayerLevel.Value : "<Inactive> FastXP");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (XPPatch).");
+                _enabledThisSession = true;
+                return false;
             }
 
-            try
-            {
-                if (hasFastGame.Value && gametimerMult.Value != 0)
-                {
-                    Harmony.CreateAndPatchAll(typeof(FastGamePatch));
-                }
-                Logger.LogInfo(hasFastGame.Value && gametimerMult.Value != 0 ? "<Active> FastGame    duration = baseTime/" + gametimerMult.Value : "<Inactive> FastGame");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (FastGamePatch).");
-            }
-
-            try
-            {
-                if (hasWeakBossesAndElites.Value)
-                {
-                    Harmony.CreateAndPatchAll(typeof(EnemyPatch));
-                }
-                Logger.LogInfo((hasWeakBossesAndElites.Value ? "<Active>" : "<Inactive>") + " Weak Bosses & Elites");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (EnemyPatch).");
-            }
-
-            try
-            {
-                Harmony.CreateAndPatchAll(typeof(NoUnlockPatch));
-                Logger.LogInfo("<Active> NoUnlocks & NoSoulGain");
-            }
-            catch
-            {
-                Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods (NoUnlockPatch).");
-            }
+            return true;
         }
     }
 }
