@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using flanne.Player;
 using flanne;
 using UnityEngine;
 
@@ -8,14 +7,24 @@ namespace DebugUtilityMod
     [HarmonyPatch]
     class GunPatch
     {
+        static BoolToggle infiniteAmmo = null;
 
         [HarmonyPatch(typeof(Ammo), "Start")]
         [HarmonyPostfix]
         static void AmmoStart_postfix(ref Ammo __instance)
         {
-            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasGunPatch)) return;
+            infiniteAmmo = __instance.infiniteAmmo;
+            SetInfiniteAmmo(DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasGunPatch));
+        }
 
-            __instance.infiniteAmmo.Flip();
+        public static void SetInfiniteAmmo(bool isInfinite)
+        {
+            if (isInfinite == infiniteAmmo.value) return; // No change
+            // Change
+            if (isInfinite)
+                infiniteAmmo.Flip();
+            else
+                infiniteAmmo.UnFlip();
         }
     }
 }
