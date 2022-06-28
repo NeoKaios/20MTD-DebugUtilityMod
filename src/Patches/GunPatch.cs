@@ -13,7 +13,7 @@ namespace DebugUtilityMod
         [HarmonyPostfix]
         static void AmmoStart_postfix(ref Ammo __instance)
         {
-            if (!DebugUtilityPlugin.activateMod.Value || !DebugUtilityPlugin.hasGunPatch.Value) return;
+            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasGunPatch)) return;
 
             __instance.infiniteAmmo.Flip();
         }

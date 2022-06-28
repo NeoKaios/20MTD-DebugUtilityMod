@@ -15,7 +15,7 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void BossLoadSpawners_prefix(ref List<BossSpawn> spawners)
         {
-            if (!DebugUtilityPlugin.activateMod.Value || !DebugUtilityPlugin.hasWeakBossesAndElites.Value) return;
+            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasWeakBossesAndElites)) return;
 
             foreach (BossSpawn bs in spawners)
             {
@@ -28,7 +28,7 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void HordeLoadSpawners_prefix(ref List<SpawnSession> spawnSessions)
         {
-            if (!DebugUtilityPlugin.activateMod.Value || !DebugUtilityPlugin.hasWeakBossesAndElites.Value) return;
+            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasWeakBossesAndElites)) return;
 
             foreach (SpawnSession spawnSession in spawnSessions)
             {

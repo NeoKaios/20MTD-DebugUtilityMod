@@ -17,7 +17,7 @@ namespace DebugUtilityMod
         [HarmonyPostfix]
         static void GameTimerUpdate_post(ref GameTimer __instance, bool ____isPlaying)
         {
-            if (!DebugUtilityPlugin.activateMod.Value || !DebugUtilityPlugin.hasFastGame.Value) return;
+            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasFastGame)) return;
 
             // Apply a X-fold multiplier to GameTimer speed
             if (!isTraverseTimerCreated)
@@ -40,7 +40,7 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void GameTimerAwake_prefix()
         {
-            if (!DebugUtilityPlugin.activateMod.Value || !DebugUtilityPlugin.hasFastGame.Value) return;
+            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasFastGame)) return;
 
             // Timer reset
             prev_timer = 0;
@@ -51,7 +51,7 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void BossLoadSpawners_prefix(ref List<BossSpawn> spawners, ref GameObject ___arenaMonsterPrefab)
         {
-            if (!DebugUtilityPlugin.activateMod.Value || !DebugUtilityPlugin.hasFastGame.Value) return;
+            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasFastGame)) return;
 
             if (!IsDone(true))
             {
@@ -72,7 +72,7 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void HordeLoadSpawners_prefix(ref List<SpawnSession> spawnSessions)
         {
-            if (!DebugUtilityPlugin.activateMod.Value || !DebugUtilityPlugin.hasFastGame.Value) return;
+            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasFastGame)) return;
 
             if (!IsDone(false))
             {
@@ -105,7 +105,7 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void SummonnEggStart_prefix(ref float ___secondsToHatch)
         {
-            if (!DebugUtilityPlugin.activateMod.Value || !DebugUtilityPlugin.hasFastGame.Value) return;
+            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasFastGame)) return;
 
             // Accelerate hatch time accordingly
             ___secondsToHatch = ___secondsToHatch / DebugUtilityPlugin.gametimerMult.Value;

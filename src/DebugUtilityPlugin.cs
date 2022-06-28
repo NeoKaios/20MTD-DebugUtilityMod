@@ -137,6 +137,16 @@ namespace DebugUtilityMod
                 }
             }
         }
+        
+        public static bool PatchEnabled(ConfigEntry<bool> configEntry)
+        {
+            if (activateMod.Value && configEntry.Value)
+            {
+                _enabledThisSession = true;
+                return true;
+            }
+            else return false;
+        }
 
         public static bool ProgressionAllowed()
         {
