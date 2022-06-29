@@ -16,7 +16,6 @@ namespace DebugUtilityMod
             if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasInfiniteReroll)) return;
 
             // Set reroll button active to give the reroll passive to every character
-            //((Button)Traverse.Create(__instance).Property("powerupRerollButton").GetValue()).gameObject.SetActive(true);
             PowerupGenerator.CanReroll = true;
             reroolButton = ((Button)Traverse.Create(__instance).Property("powerupRerollButton").GetValue());
         }

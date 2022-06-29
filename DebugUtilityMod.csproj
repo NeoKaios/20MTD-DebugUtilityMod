@@ -39,6 +39,9 @@
 		<Reference Include="Unity.TextMeshPro">
 			<HintPath>$(GameLibDir)\Unity.TextMeshPro.dll</HintPath>
 		</Reference>
+		<Reference Include="MTDUI">
+			<HintPath>$(BepInExDir)\plugins\MTDUI\MTDUI.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 
 	<!--Automatic deploy-->

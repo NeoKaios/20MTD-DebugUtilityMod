@@ -29,18 +29,6 @@ namespace DebugUtilityMod
 
         private static bool _enabledThisSession = false;
 
-        private MethodInfo _registerMethod = null;
-        private void RegisterWithReflection<T>(ConfigEntry<T> configEntry, List<T> acceptableValues = null)
-        {
-            if(_registerMethod == null)
-            {
-                var modOptionsType = Traverse.CreateWithType("MTDUI.ModOptions").GetValue() as Type;
-                _registerMethod = modOptionsType.GetMethod("Register", BindingFlags.Public | BindingFlags.Static);
-            }
-
-            _registerMethod.MakeGenericMethod(new Type[] { typeof(T) }).Invoke(null, new object[]{ configEntry, acceptableValues });
-        }
-
         // moved to Start instead of Awake so we can use Chainloader after it's fully loaded
         // this can be reverted once we don't need to use reflection for registration
         public void Start()
@@ -61,37 +49,24 @@ namespace DebugUtilityMod
             hasWeakBossesAndElites = Config.Bind("Enemy", "Weak Bosses and Elite", false, "If active, Bosses and Elite have 100 HP");
 
             var mtdui = Chainloader.PluginInfos.FirstOrDefault(x => x.Key == "dev.bobbie.20mtd.mtdui");
-            if(mtdui.Value != null)
+            if (mtdui.Value != null)
             {
-
                 try
                 {
-                    // This bit is temporary
-                    // Since nexus has no proper dependency resolution, I've opted to use reflection so the mod still works without MTDUI
-                    // once we migrate from nexus to thunderstore, the chainloader check and reflection bit can be removed
-                    // and MTDUI can explicitly be added as a dependency
-                    RegisterWithReflection(hasXPPatch);
-                    RegisterWithReflection(XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f });
-                    RegisterWithReflection(maxPlayerLevel, new List<int>() { 50, 100, 200, 500, 1000 });
-                    RegisterWithReflection(hasFastGame);
-                    RegisterWithReflection(gametimerMult, new List<float>() { 0.5f, 1f, 2f, 5f, 10f, 100f });
-                    RegisterWithReflection(hasInvincibility);
-                    RegisterWithReflection(hasInfiniteReroll);
-                    RegisterWithReflection(hasGunPatch);
-                    RegisterWithReflection(hasWeakBossesAndElites);
-                    /*
-                    MTDUI.ModOptions.Register(hasXPPatch);
-                    MTDUI.ModOptions.Register(XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f });
-                    MTDUI.ModOptions.Register(maxPlayerLevel, new List<int>() { 50, 100, 200, 500, 1000 });
-                    MTDUI.ModOptions.Register(hasFastGame);
-                    MTDUI.ModOptions.Register(gametimerMult, new List<float>() { 0.5f, 1f, 2f, 5f, 10f, 100f });
-                    MTDUI.ModOptions.Register(hasInvincibility);
-                    MTDUI.ModOptions.Register(hasInfiniteReroll);
-                    MTDUI.ModOptions.Register(hasGunPatch);
-                    MTDUI.ModOptions.Register(hasWeakBossesAndElites);
-                    */
+                    string mod = "Debug";
+                    MTDUI.ModOptions.Register(mod, hasXPPatch, null, false);
+                    MTDUI.ModOptions.Register(mod, XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f }, false);
+                    MTDUI.ModOptions.Register(mod, maxPlayerLevel, new List<int>() { 50, 100, 200, 500, 1000 });
+                    MTDUI.ModOptions.RegisterWithPauseAction(mod, hasGunPatch, GunPatch.ChangePatch);
+                    MTDUI.ModOptions.Register(mod, hasFastGame);
+                    MTDUI.ModOptions.Register(mod, gametimerMult, new List<float>() { 0.5f, 1f, 2f, 5f, 10f, 100f });
+                    MTDUI.ModOptions.RegisterWithPauseAction(mod, hasInvincibility, InvincibilityPatch.ChangePatch);
+                    MTDUI.ModOptions.Register(mod, hasInfiniteReroll);
+                    MTDUI.ModOptions.Register(mod, hasWeakBossesAndElites);
+
                 }
-                catch (Exception ex) { 
+                catch (Exception ex)
+                {
                     Logger.LogError(ex);
                 }
             }
@@ -115,13 +90,15 @@ namespace DebugUtilityMod
                 Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods.");
             }
 
+
+
             if (!activateMod.Value)
             {
                 Logger.LogInfo("<Inactive>");
                 return;
             }
 
-            foreach(var configEntry in _configEntries)
+            foreach (var configEntry in _configEntries)
             {
                 if (configEntry.Value == hasXPPatch)
                 {
@@ -137,7 +114,7 @@ namespace DebugUtilityMod
                 }
             }
         }
-        
+
         public static bool PatchEnabled(ConfigEntry<bool> configEntry)
         {
             if (activateMod.Value && configEntry.Value)
@@ -156,9 +133,9 @@ namespace DebugUtilityMod
             if (_enabledThisSession) return !_enabledThisSession;
 
             bool anyPatchesEnabled = false;
-            foreach(var patch in _configEntries)
+            foreach (var patch in _configEntries)
             {
-                if(patch.Value.Value) anyPatchesEnabled = true;
+                if (patch.Value.Value) anyPatchesEnabled = true;
             }
 
             if (anyPatchesEnabled && activateMod.Value)

@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using flanne;
+using BepInEx.Configuration;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace DebugUtilityMod
 {
@@ -14,13 +16,16 @@ namespace DebugUtilityMod
         static void AmmoStart_postfix(ref Ammo __instance)
         {
             infiniteAmmo = __instance.infiniteAmmo;
-            SetInfiniteAmmo(DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasGunPatch));
+            ChangePatch();
         }
 
-        public static void SetInfiniteAmmo(bool isInfinite)
+        public static void ChangePatch()
         {
+            if (infiniteAmmo == null) return;
+            bool isInfinite = DebugUtilityPlugin.hasGunPatch.Value;
             if (isInfinite == infiniteAmmo.value) return; // No change
             // Change
+            DebugUtilityPlugin.ProgressionAllowed();
             if (isInfinite)
                 infiniteAmmo.Flip();
             else
