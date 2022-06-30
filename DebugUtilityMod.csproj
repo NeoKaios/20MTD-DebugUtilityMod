@@ -4,7 +4,7 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<AssemblyName>DebugUtilityMod</AssemblyName>
 		<Description>A mod for modders</Description>
-		<Version>1.1</Version>
+		<Version>1.2</Version>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

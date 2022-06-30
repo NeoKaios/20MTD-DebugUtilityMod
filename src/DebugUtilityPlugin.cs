@@ -34,6 +34,7 @@ namespace DebugUtilityMod
         public void Start()
         {
             activateMod = Config.Bind("_General", "Activation", true, "If false, the mod does not load");
+
             hasXPPatch = Config.Bind("XP Patch", "XP Patch activation", false, "Set to True to activate XP Patch");
             XPmult = Config.Bind("XP Patch", "XP multiplier", 1f, "Amount of multiplication bonus applied to XP pickup, 1 is baseXP");
             maxPlayerLevel = Config.Bind("XP Patch", "Max level reachable", 100, "Level after which the player stop receiving XP");
@@ -41,7 +42,7 @@ namespace DebugUtilityMod
             hasFastGame = Config.Bind("Fast GameTimer", "FastGame activation", false, "Set to True to activate faster game");
             gametimerMult = Config.Bind("Fast GameTimer", "GameTimer speed", 2f, "Increase the speed of the game; x is baseTime/x, 1 is baseTime");
 
-            hasInvincibility = Config.Bind("Invincibility", "Player Invincibility", false, "If active, the player cannot take damage");
+            hasInvincibility = Config.Bind("Invincibility", "Invincibility", false, "If active, the player cannot take damage");
 
             hasInfiniteReroll = Config.Bind("Reroll", "Infinite Reroll", false, "If active, every character can reroll indefinitly");
 
@@ -53,17 +54,22 @@ namespace DebugUtilityMod
             {
                 try
                 {
-                    string mod = "Debug";
-                    MTDUI.ModOptions.Register(mod, hasXPPatch, null, false);
-                    MTDUI.ModOptions.Register(mod, XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f }, false);
-                    MTDUI.ModOptions.Register(mod, maxPlayerLevel, new List<int>() { 50, 100, 200, 500, 1000 });
-                    MTDUI.ModOptions.RegisterWithPauseAction(mod, hasGunPatch, GunPatch.ChangePatch);
-                    MTDUI.ModOptions.Register(mod, hasFastGame);
-                    MTDUI.ModOptions.Register(mod, gametimerMult, new List<float>() { 0.5f, 1f, 2f, 5f, 10f, 100f });
-                    MTDUI.ModOptions.RegisterWithPauseAction(mod, hasInvincibility, InvincibilityPatch.ChangePatch);
-                    MTDUI.ModOptions.Register(mod, hasInfiniteReroll);
-                    MTDUI.ModOptions.Register(mod, hasWeakBossesAndElites);
-
+                    string mod = "General Utility Mod";
+                    //MTDUI.ModOptions.Register(activateMod, null, subMenuName: mod);
+                    if (!activateMod.Value)
+                    {
+                        Logger.LogInfo("<Inactive>");
+                        return;
+                    }
+                    MTDUI.ModOptions.Register(hasXPPatch, location: MTDUI.ConfigEntryLocationType.PauseOnly, subMenuName: "mod");
+                    MTDUI.ModOptions.Register(XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f }, subMenuName: mod);
+                    MTDUI.ModOptions.Register(maxPlayerLevel, new List<int>() { 0, 10, 100, 1000 }, subMenuName: mod);
+                    MTDUI.ModOptions.Register(hasFastGame, subMenuName: mod);
+                    MTDUI.ModOptions.Register(gametimerMult, new List<float>() { 0.5f, 1f, 2f, 5f, 10f, 20f }, subMenuName: mod);
+                    MTDUI.ModOptions.RegisterWithPauseAction(hasInvincibility, InvincibilityPatch.ChangePatch, subMenuName: mod);
+                    MTDUI.ModOptions.Register(hasGunPatch, location: MTDUI.ConfigEntryLocationType.Everywhere, subMenuName: mod);
+                    MTDUI.ModOptions.RegisterWithPauseAction(hasInfiniteReroll, RerollPatch.ChangePatch, subMenuName: mod);
+                    MTDUI.ModOptions.Register(hasWeakBossesAndElites, subMenuName: mod);
                 }
                 catch (Exception ex)
                 {
@@ -88,14 +94,6 @@ namespace DebugUtilityMod
             catch
             {
                 Logger.LogError($"{PluginInfo.PLUGIN_GUID} failed to patch methods.");
-            }
-
-
-
-            if (!activateMod.Value)
-            {
-                Logger.LogInfo("<Inactive>");
-                return;
             }
 
             foreach (var configEntry in _configEntries)

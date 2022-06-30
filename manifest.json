@@ -1,0 +1,9 @@
+{
+    "name": "DebugUtilityMod",
+    "version_number": "1.2.0",
+    "website_url": "",
+    "description": "This mod is useful while debugging other mod or the game",
+    "dependencies": [
+        "BepInExPackMTD-BepInExPack_20MTD-1.0.0"
+    ]
+}

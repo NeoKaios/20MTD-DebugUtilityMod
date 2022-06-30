@@ -41,7 +41,7 @@ namespace DebugUtilityMod
         {
             if (DebugUtilityPlugin.ProgressionAllowed()) return;
 
-            ___totalScoreTMP.text += "     Debug is/was active";
+            ___totalScoreTMP.text = "DUM is/was active   " + ___totalScoreTMP.text;
 
         }
     }
