@@ -10,7 +10,7 @@ using System.Reflection;
 namespace DebugUtilityMod
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-    public class DebugUtilityPlugin : BaseUnityPlugin
+    public class DUMPlugin : BaseUnityPlugin
     {
         public static ConfigEntry<bool> activateMod;
 
@@ -34,7 +34,11 @@ namespace DebugUtilityMod
         public void Start()
         {
             activateMod = Config.Bind("_General", "Activation", true, "If false, the mod does not load");
-
+            if (!activateMod.Value)
+            {
+                Logger.LogInfo("<Inactive>");
+                return;
+            }
             hasXPPatch = Config.Bind("XP Patch", "XP Patch activation", false, "Set to True to activate XP Patch");
             XPmult = Config.Bind("XP Patch", "XP multiplier", 1f, "Amount of multiplication bonus applied to XP pickup, 1 is baseXP");
             maxPlayerLevel = Config.Bind("XP Patch", "Max level reachable", 100, "Level after which the player stop receiving XP");
@@ -54,21 +58,17 @@ namespace DebugUtilityMod
             {
                 try
                 {
-                    string mod = "General Utility Mod";
+                    string mod = "D.U.M.";
                     //MTDUI.ModOptions.Register(activateMod, null, subMenuName: mod);
-                    if (!activateMod.Value)
-                    {
-                        Logger.LogInfo("<Inactive>");
-                        return;
-                    }
-                    MTDUI.ModOptions.Register(hasXPPatch, location: MTDUI.ConfigEntryLocationType.PauseOnly, subMenuName: "mod");
+
+                    MTDUI.ModOptions.Register(hasXPPatch, subMenuName: mod);
                     MTDUI.ModOptions.Register(XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f }, subMenuName: mod);
                     MTDUI.ModOptions.Register(maxPlayerLevel, new List<int>() { 0, 10, 100, 1000 }, subMenuName: mod);
                     MTDUI.ModOptions.Register(hasFastGame, subMenuName: mod);
-                    MTDUI.ModOptions.Register(gametimerMult, new List<float>() { 0.5f, 1f, 2f, 5f, 10f, 20f }, subMenuName: mod);
-                    MTDUI.ModOptions.RegisterWithPauseAction(hasInvincibility, InvincibilityPatch.ChangePatch, subMenuName: mod);
+                    MTDUI.ModOptions.Register(gametimerMult, new List<float>() { 0.5f, 2f, 5f, 10f, 20f }, subMenuName: mod);
+                    MTDUI.ModOptions.Register(hasInvincibility, location: MTDUI.ConfigEntryLocationType.Everywhere, subMenuName: mod);
                     MTDUI.ModOptions.Register(hasGunPatch, location: MTDUI.ConfigEntryLocationType.Everywhere, subMenuName: mod);
-                    MTDUI.ModOptions.RegisterWithPauseAction(hasInfiniteReroll, RerollPatch.ChangePatch, subMenuName: mod);
+                    MTDUI.ModOptions.Register(hasInfiniteReroll, location: MTDUI.ConfigEntryLocationType.Everywhere, subMenuName: mod);
                     MTDUI.ModOptions.Register(hasWeakBossesAndElites, subMenuName: mod);
                 }
                 catch (Exception ex)

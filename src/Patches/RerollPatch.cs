@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using flanne.Core;
 using flanne;
 using UnityEngine;
@@ -18,7 +19,8 @@ namespace DebugUtilityMod
         {
             reroolButton = ((Button)Traverse.Create(__instance).Property("powerupRerollButton").GetValue());
             isShanaPlaying = Loadout.CharacterSelection.name == "Shana";
-            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasInfiniteReroll)) return;
+            DUMPlugin.hasInfiniteReroll.SettingChanged += ChangePatch;
+            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasInfiniteReroll)) return;
 
             // Set reroll button active to give the reroll passive to every character
             PowerupGenerator.CanReroll = true;
@@ -28,15 +30,15 @@ namespace DebugUtilityMod
         [HarmonyPostfix]
         static void OnReroll_postfix(ref PowerupMenuState __instance)
         {
-            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasInfiniteReroll)) return;
+            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasInfiniteReroll)) return;
 
             // Set reroll button active after reroll, to obtain infinite reroll
             reroolButton.gameObject.SetActive(true);
         }
 
-        public static void ChangePatch()
+        public static void ChangePatch(object sender, EventArgs e)
         {
-            PowerupGenerator.CanReroll = DebugUtilityPlugin.hasInfiniteReroll.Value || isShanaPlaying;
+            PowerupGenerator.CanReroll = DUMPlugin.hasInfiniteReroll.Value || isShanaPlaying;
         }
     }
 }

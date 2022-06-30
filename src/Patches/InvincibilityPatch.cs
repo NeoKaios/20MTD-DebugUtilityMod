@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using flanne.Core;
 using flanne;
 using UnityEngine;
@@ -17,16 +18,17 @@ namespace DebugUtilityMod
         {
             currentState = false;
             toggleData = ((Health)Traverse.Create(__instance).Property("playerHealth").GetValue()).isInvincible;
-            ChangePatch();
+            DUMPlugin.hasInvincibility.SettingChanged += ChangePatch;
+            ChangePatch(null, null);
         }
 
-        public static void ChangePatch()
+        public static void ChangePatch(object sender, EventArgs e)
         {
             if (toggleData == null) return;
-            bool isInvicible = DebugUtilityPlugin.hasInvincibility.Value;
+            bool isInvicible = DUMPlugin.hasInvincibility.Value;
             if (isInvicible == currentState) return; // No change
             // Change
-            DebugUtilityPlugin.ProgressionAllowed();
+            DUMPlugin.ProgressionAllowed();
             currentState = isInvicible;
             if (isInvicible)
                 toggleData.Flip();

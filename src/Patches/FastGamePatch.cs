@@ -16,7 +16,7 @@ namespace DebugUtilityMod
         [HarmonyPostfix]
         static void GameTimerStart_post(ref GameTimer __instance)
         {
-            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasFastGame)) return;
+            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasFastGame)) return;
 
             // Backup Traverse to increase performance on update
             timer = Traverse.Create(__instance).Property("timer");
@@ -32,7 +32,7 @@ namespace DebugUtilityMod
             {
                 float delta = __instance.timer - prev_timer;
                 //Traverse.Create(__instance).Property("timer").SetValue(prev_timer + delta * DebugUtilityPlugin.gametimerMult.Value);
-                timer.SetValue(prev_timer + delta * DebugUtilityPlugin.gametimerMult.Value);
+                timer.SetValue(prev_timer + delta * DUMPlugin.gametimerMult.Value);
 
                 prev_timer = __instance.timer;
             }
@@ -42,19 +42,19 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void BossLoadSpawners_prefix(ref List<BossSpawn> spawners, ref GameObject ___arenaMonsterPrefab)
         {
-            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasFastGame)) return;
+            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasFastGame)) return;
 
             if (IsDone(true)) return;
 
             // Reduce arena lifetime accordingly
             TimeToLive ttl = (TimeToLive)___arenaMonsterPrefab.GetComponent("TimeToLive");
             float lifetime = (float)Traverse.Create(ttl).Field("lifetime").GetValue();
-            Traverse.Create(ttl).Field("lifetime").SetValue(lifetime / DebugUtilityPlugin.gametimerMult.Value);
+            Traverse.Create(ttl).Field("lifetime").SetValue(lifetime / DUMPlugin.gametimerMult.Value);
 
             foreach (BossSpawn bs in spawners)
             {
                 // Reduce bosses spawn times accordingly
-                bs.timeToSpawn /= DebugUtilityPlugin.gametimerMult.Value;
+                bs.timeToSpawn /= DUMPlugin.gametimerMult.Value;
             }
         }
 
@@ -62,16 +62,16 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void HordeLoadSpawners_prefix(ref List<SpawnSession> spawnSessions)
         {
-            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasFastGame)) return;
+            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasFastGame)) return;
 
             if (IsDone(false)) return;
 
             foreach (SpawnSession ss in spawnSessions)
             {
                 // Accelerate horde time params accordingly
-                ss.startTime /= DebugUtilityPlugin.gametimerMult.Value;
-                ss.duration /= DebugUtilityPlugin.gametimerMult.Value;
-                ss.spawnCooldown /= DebugUtilityPlugin.gametimerMult.Value;
+                ss.startTime /= DUMPlugin.gametimerMult.Value;
+                ss.duration /= DUMPlugin.gametimerMult.Value;
+                ss.spawnCooldown /= DUMPlugin.gametimerMult.Value;
             }
         }
 
@@ -96,10 +96,10 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void SummonnEggStart_prefix(ref float ___secondsToHatch)
         {
-            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasFastGame)) return;
+            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasFastGame)) return;
 
             // Accelerate hatch time accordingly
-            ___secondsToHatch = ___secondsToHatch / DebugUtilityPlugin.gametimerMult.Value;
+            ___secondsToHatch = ___secondsToHatch / DUMPlugin.gametimerMult.Value;
         }
     }
 }
