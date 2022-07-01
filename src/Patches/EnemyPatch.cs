@@ -9,13 +9,12 @@ namespace DebugUtilityMod
     class EnemyPatch
     {
 
-        // Weak elites and bosses
-        // TODO: Make this work when adjusted in-game mid-match instead of only on init
+        // Weak bosses
         [HarmonyPatch(typeof(BossSpawner), "LoadSpawners")]
         [HarmonyPrefix]
         static void BossLoadSpawners_prefix(ref List<BossSpawn> spawners)
         {
-            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasWeakBossesAndElites)) return;
+            if (!DUMPlugin.activateMod.Value || !DUMPlugin.hasWeakBossesAndElites.Value) return;
 
             foreach (BossSpawn bs in spawners)
             {
@@ -24,11 +23,12 @@ namespace DebugUtilityMod
             }
         }
 
+        // Weak elites
         [HarmonyPatch(typeof(HordeSpawner), "LoadSpawners")]
         [HarmonyPrefix]
         static void HordeLoadSpawners_prefix(ref List<SpawnSession> spawnSessions)
         {
-            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasWeakBossesAndElites)) return;
+            if (!DUMPlugin.activateMod.Value || !DUMPlugin.hasWeakBossesAndElites.Value) return;
 
             foreach (SpawnSession spawnSession in spawnSessions)
             {

@@ -16,7 +16,7 @@ namespace DebugUtilityMod
         [HarmonyPostfix]
         static void GameTimerStart_post(ref GameTimer __instance)
         {
-            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasFastGame)) return;
+            if (!DUMPlugin.activateMod.Value || !DUMPlugin.hasFastGame.Value) return;
 
             // Backup Traverse to increase performance on update
             timer = Traverse.Create(__instance).Property("timer");
@@ -28,10 +28,9 @@ namespace DebugUtilityMod
         static void GameTimerUpdate_post(ref GameTimer __instance, bool ____isPlaying)
         {
             // Apply a X-fold multiplier to GameTimer speed
-            if (____isPlaying && timer != null)
+            if (____isPlaying && DUMPlugin.hasFastGame.Value)
             {
                 float delta = __instance.timer - prev_timer;
-                //Traverse.Create(__instance).Property("timer").SetValue(prev_timer + delta * DebugUtilityPlugin.gametimerMult.Value);
                 timer.SetValue(prev_timer + delta * DUMPlugin.gametimerMult.Value);
 
                 prev_timer = __instance.timer;
@@ -42,7 +41,7 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void BossLoadSpawners_prefix(ref List<BossSpawn> spawners, ref GameObject ___arenaMonsterPrefab)
         {
-            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasFastGame)) return;
+            if (!DUMPlugin.activateMod.Value || !DUMPlugin.hasFastGame.Value) return;
 
             if (IsDone(true)) return;
 
@@ -62,7 +61,7 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void HordeLoadSpawners_prefix(ref List<SpawnSession> spawnSessions)
         {
-            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasFastGame)) return;
+            if (!DUMPlugin.activateMod.Value || !DUMPlugin.hasFastGame.Value) return;
 
             if (IsDone(false)) return;
 
@@ -74,7 +73,6 @@ namespace DebugUtilityMod
                 ss.spawnCooldown /= DUMPlugin.gametimerMult.Value;
             }
         }
-
 
         private static List<string> doneGameMode = new List<string>();
         // This is useful trust me, avoid reducing twice spawn timers,
@@ -96,7 +94,7 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void SummonnEggStart_prefix(ref float ___secondsToHatch)
         {
-            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasFastGame)) return;
+            if (!DUMPlugin.activateMod.Value || !DUMPlugin.hasFastGame.Value) return;
 
             // Accelerate hatch time accordingly
             ___secondsToHatch = ___secondsToHatch / DUMPlugin.gametimerMult.Value;

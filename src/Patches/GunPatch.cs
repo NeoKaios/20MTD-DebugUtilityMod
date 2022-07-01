@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Security.Cryptography;
+using System;
 using HarmonyLib;
 using flanne;
 using BepInEx.Configuration;
@@ -16,9 +17,10 @@ namespace DebugUtilityMod
         [HarmonyPostfix]
         static void AmmoStart_postfix(ref Ammo __instance)
         {
+            if (!DUMPlugin.activateMod.Value) return;
             infiniteAmmo = __instance.infiniteAmmo;
             DUMPlugin.hasGunPatch.SettingChanged += ChangePatch;
-            ChangePatch(null, null);
+            if (DUMPlugin.hasGunPatch.Value) ChangePatch(null, null);
         }
 
         public static void ChangePatch(object sender, EventArgs e)
@@ -27,11 +29,11 @@ namespace DebugUtilityMod
             bool isInfinite = DUMPlugin.hasGunPatch.Value;
             if (isInfinite == infiniteAmmo.value) return; // No change
             // Change
-            DUMPlugin.ProgressionAllowed();
             if (isInfinite)
                 infiniteAmmo.Flip();
             else
                 infiniteAmmo.UnFlip();
+            NoUnlockPatch.SetProgressionForbidden();
         }
     }
 }

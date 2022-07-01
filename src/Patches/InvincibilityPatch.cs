@@ -14,12 +14,13 @@ namespace DebugUtilityMod
 
         [HarmonyPatch(typeof(InitState), "Exit")]
         [HarmonyPostfix]
-        static void InitStateExit_postfix(ref InitState __instance)
+        static void InitStateExit_postfix(GameController ___owner)
         {
+            if (!DUMPlugin.activateMod.Value) return;
             currentState = false;
-            toggleData = ((Health)Traverse.Create(__instance).Property("playerHealth").GetValue()).isInvincible;
+            toggleData = ___owner.playerHealth.isInvincible;
             DUMPlugin.hasInvincibility.SettingChanged += ChangePatch;
-            ChangePatch(null, null);
+            if (DUMPlugin.hasInvincibility.Value) ChangePatch(null, null);
         }
 
         public static void ChangePatch(object sender, EventArgs e)
@@ -28,12 +29,12 @@ namespace DebugUtilityMod
             bool isInvicible = DUMPlugin.hasInvincibility.Value;
             if (isInvicible == currentState) return; // No change
             // Change
-            DUMPlugin.ProgressionAllowed();
             currentState = isInvicible;
             if (isInvicible)
                 toggleData.Flip();
             else
                 toggleData.UnFlip();
+            NoUnlockPatch.SetProgressionForbidden();
         }
     }
 }

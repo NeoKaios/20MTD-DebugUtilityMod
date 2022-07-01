@@ -15,22 +15,21 @@ namespace DebugUtilityMod
 
         [HarmonyPatch(typeof(InitState), "Enter")]
         [HarmonyPrefix]
-        static void InitStateEnter_prefix(ref PowerupMenuState __instance, GameController ___owner)
+        static void InitStateEnter_prefix(GameController ___owner)
         {
-            reroolButton = ((Button)Traverse.Create(__instance).Property("powerupRerollButton").GetValue());
+            if (!DUMPlugin.activateMod.Value) return;
+            reroolButton = ___owner.powerupRerollButton;
             isShanaPlaying = Loadout.CharacterSelection.name == "Shana";
             DUMPlugin.hasInfiniteReroll.SettingChanged += ChangePatch;
-            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasInfiniteReroll)) return;
-
             // Set reroll button active to give the reroll passive to every character
-            PowerupGenerator.CanReroll = true;
+            if (DUMPlugin.hasInfiniteReroll.Value) PowerupGenerator.CanReroll = true;
         }
 
         [HarmonyPatch(typeof(PowerupMenuState), "OnReroll")]
         [HarmonyPostfix]
         static void OnReroll_postfix(ref PowerupMenuState __instance)
         {
-            if (!DUMPlugin.PatchEnabled(DUMPlugin.hasInfiniteReroll)) return;
+            if (!DUMPlugin.hasInfiniteReroll.Value) return;
 
             // Set reroll button active after reroll, to obtain infinite reroll
             reroolButton.gameObject.SetActive(true);
@@ -39,6 +38,7 @@ namespace DebugUtilityMod
         public static void ChangePatch(object sender, EventArgs e)
         {
             PowerupGenerator.CanReroll = DUMPlugin.hasInfiniteReroll.Value || isShanaPlaying;
+            NoUnlockPatch.SetProgressionForbidden();
         }
     }
 }
