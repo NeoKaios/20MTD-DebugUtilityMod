@@ -53,15 +53,15 @@ namespace DebugUtilityMod
             try
             {
                 string mod = "D.U.M.";
-                ModOptions.Register(hasXPPatch, subMenuName: mod);
-                ModOptions.Register(XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f }, subMenuName: mod);
-                ModOptions.Register(maxPlayerLevel, new List<int>() { 0, 10, 100, 1000 }, subMenuName: mod);
-                ModOptions.Register(hasFastGame, subMenuName: mod);
-                ModOptions.Register(gametimerMult, new List<float>() { 0.5f, 2f, 5f, 10f, 20f }, subMenuName: mod);
-                ModOptions.Register(hasWeakBossesAndElites, subMenuName: mod);
-                ModOptions.Register(hasInvincibility, location: ConfigEntryLocationType.Everywhere, subMenuName: mod);
-                ModOptions.Register(hasGunPatch, location: ConfigEntryLocationType.Everywhere, subMenuName: mod);
-                ModOptions.Register(hasInfiniteReroll, location: ConfigEntryLocationType.Everywhere, subMenuName: mod);
+                ModOptions.Register(hasXPPatch, location: ConfigEntryLocationType.MainOnly, subMenuName: mod);
+                ModOptions.Register(XPmult, new List<float>() { 1f, 2f, 5f, 10f, 100f }, ConfigEntryLocationType.MainOnly, subMenuName: mod);
+                ModOptions.Register(maxPlayerLevel, new List<int>() { 0, 10, 100, 1000 }, ConfigEntryLocationType.MainOnly, subMenuName: mod);
+                ModOptions.Register(hasFastGame, location: ConfigEntryLocationType.MainOnly, subMenuName: mod);
+                ModOptions.Register(gametimerMult, new List<float>() { 0.5f, 2f, 5f, 10f, 20f }, location: ConfigEntryLocationType.MainOnly, subMenuName: mod);
+                ModOptions.Register(hasWeakBossesAndElites, location: ConfigEntryLocationType.MainOnly, subMenuName: mod);
+                ModOptions.Register(hasInvincibility, subMenuName: mod);
+                ModOptions.Register(hasGunPatch, subMenuName: mod);
+                ModOptions.Register(hasInfiniteReroll, subMenuName: mod);
             }
             catch (Exception ex)
             {
