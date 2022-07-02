@@ -4,7 +4,7 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<AssemblyName>DebugUtilityMod</AssemblyName>
 		<Description>A mod for modders</Description>
-		<Version>1.1</Version>
+		<Version>2.0.1</Version>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
@@ -39,6 +39,9 @@
 		<Reference Include="Unity.TextMeshPro">
 			<HintPath>$(GameLibDir)\Unity.TextMeshPro.dll</HintPath>
 		</Reference>
+		<Reference Include="MTDUI">
+			<HintPath>$(BepInExDir)\plugins\MTDUI\MTDUI.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 
 	<!--Automatic deploy-->
@@ -50,6 +53,7 @@
 	<Target Name="Package" AfterTargets="Publish">
 		<MakeDir Directories="$(MSBuildProjectDirectory)\release" />
 		<Copy SourceFiles="@(MainAssembly)" DestinationFolder="$(MSBuildProjectDirectory)\release" />
+		<Copy SourceFiles="README.md;icon.png;manifest.json" DestinationFolder="$(MSBuildProjectDirectory)\release"/>
 		<ZipDirectory SourceDirectory="$(MSBuildProjectDirectory)\release" DestinationFile="$(MSBuildProjectDirectory)\$(AssemblyName)-v$(Version).zip" />
 	</Target>
 </Project>

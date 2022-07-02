@@ -8,6 +8,7 @@ namespace DebugUtilityMod
     [HarmonyPatch]
     static class XPPatch
     {
+        // Useful to remove Traverse calls
         static bool doGainXP = true;
         static int lvl = 1;
 
@@ -15,20 +16,19 @@ namespace DebugUtilityMod
         [HarmonyPostfix]
         static void PlayerXPAwake_postfix(ref StatMod ___xpMultiplier)
         {
-            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasXPPatch)) return;
+            if (!DUMPlugin.activateMod.Value || !DUMPlugin.hasXPPatch.Value) return;
 
             // Add multiplier to XP amount gain, value stored in config (v0.1)
-            ___xpMultiplier.AddMultiplierBonus(DebugUtilityPlugin.XPmult.Value - 1);
+            ___xpMultiplier.AddMultiplierBonus(DUMPlugin.XPmult.Value - 1);
             lvl = 1;
-            doGainXP = true;
+            doGainXP = DUMPlugin.maxPlayerLevel.Value > 1;
         }
-
 
         [HarmonyPatch(typeof(PlayerXP), "GainXP")]
         [HarmonyPrefix]
         static bool GainXP_prefix()
         {
-            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasXPPatch)) return true;
+            if (!DUMPlugin.hasXPPatch.Value) return true;
 
             //Skip XP gain if playerLVL >= maxLVL
             return doGainXP;
@@ -38,10 +38,10 @@ namespace DebugUtilityMod
         [HarmonyPrefix]
         static void OnLevelUp_prefix()
         {
-            if (!DebugUtilityPlugin.PatchEnabled(DebugUtilityPlugin.hasXPPatch)) return;
+            if (!DUMPlugin.hasXPPatch.Value) return;
 
             lvl++;
-            doGainXP = lvl < DebugUtilityPlugin.maxPlayerLevel.Value;
+            doGainXP = lvl < DUMPlugin.maxPlayerLevel.Value;
         }
     }
 }

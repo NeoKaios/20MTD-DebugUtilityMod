@@ -1,0 +1,10 @@
+{
+    "name": "DebugUtilityMod",
+    "version_number": "2.0.1",
+    "website_url": "https://github.com/NeoKaios/20MTD-DebugUtilityMod",
+    "description": "This mod is useful while debugging other mod or the game",
+    "dependencies": [
+        "BepInExPackMTD-BepInExPack_20MTD-1.0.0",
+        "Bobbie-MTDUI-1.0.3"
+    ]
+}
