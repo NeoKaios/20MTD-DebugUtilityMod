@@ -24,11 +24,11 @@ To avoid currupting save file during test runs, this mod prevents
 
 ## Depedency
 
-For the in-game UI, rely on [MTDUI](https://github.com/legoandmars/MTDUI)
+For the in-game UI, rely on [MTDUI](https://github.com/legoandmars/MTDUI). Thanks to [@Bobbie](https://github.com/legoandmars) for the contribution !
 
 ## For modders
 
-- Clone the project
+- Clone the [repo](https://github.com/NeoKaios/20MTD-DebugUtilityMod)
 - Open repo in VSCode
 - Setup $GameDir variable in *DebugUtilityMod.csproj*
 - ```dotnet build``` to build and deploy mod
