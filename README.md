@@ -5,7 +5,10 @@ A [BepInEx](https://github.com/BepInEx/BepInEx/releases) plugin for [20 Minutes 
 
 Provides support for modders with some quality of life configurable tweak that make debugging process easier.
 
-Modders can change config values via the BepInEx config file : BepInEx/config/kaios.mod.debugutility
+Users can change config values via several ways :
+- MTDUI in-game interface
+- r2modman GUI *if installed via r2modman*
+- BepInEx config file *gamefolder*/BepInEx/config/DebugUtilityMod.cfg *if installed manually*
 
 ### Configurable feature
 - XPPatch       : Fast level up and max level
